@@ -7,6 +7,24 @@
     <RootNamespace>SpecHygiene</RootNamespace>
     <AssemblyName>spechygiene</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- Distribute as a .NET global/local tool: `dotnet tool install -g SpecHygiene` -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>spechygiene</ToolCommandName>
+
+    <!-- NuGet package metadata -->
+    <PackageId>SpecHygiene</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Karthik Kalaiyarasu</Authors>
+    <Title>SpecHygiene</Title>
+    <Description>Static hygiene checks for Reqnroll / SpecFlow BDD solutions — finds unused C# code, unused step definitions, feature-file data errors, and duplicate scenarios. No AI, no network.</Description>
+    <PackageTags>reqnroll;specflow;bdd;gherkin;dotnet-tool;static-analysis;dead-code;roslyn;test-automation</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Karzone/SpecHygiene</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Karzone/SpecHygiene</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>First release. Four static checks: unused code, unused step definitions, data errors, and duplicate scenarios, with a self-contained HTML report.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +41,8 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- Ship the README inside the NuGet package so it renders on nuget.org -->
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
