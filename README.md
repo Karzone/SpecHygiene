@@ -1,8 +1,8 @@
 <h1 align="center">SpecHygiene</h1>
 
 <p align="center">
-  <strong>Static hygiene checks for <a href="https://reqnroll.net/">Reqnroll</a> / SpecFlow BDD solutions.</strong><br>
-  Find the dead weight — unused code, unused step definitions, broken feature data, and duplicate scenarios.
+  <strong>Find the dead weight in your <a href="https://reqnroll.net/">Reqnroll</a> / SpecFlow BDD suite.</strong><br>
+  Unused code, unused step definitions, data errors, and duplicate scenarios — pure static analysis, no AI, no network.
 </p>
 
 <p align="center">

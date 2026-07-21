@@ -17,7 +17,7 @@
     <Version>1.0.0</Version>
     <Authors>Karthik Kalaiyarasu</Authors>
     <Title>SpecHygiene</Title>
-    <Description>Static hygiene checks for Reqnroll / SpecFlow BDD solutions — finds unused C# code, unused step definitions, feature-file data errors, and duplicate scenarios. No AI, no network.</Description>
+    <Description>Find the dead weight in your Reqnroll / SpecFlow BDD suite — unused code, unused step definitions, data errors, and duplicate scenarios. Pure static analysis, no AI, no network.</Description>
     <PackageTags>reqnroll;specflow;bdd;gherkin;dotnet-tool;static-analysis;dead-code;roslyn;test-automation</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Karzone/SpecHygiene</PackageProjectUrl>
