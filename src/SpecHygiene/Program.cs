@@ -84,6 +84,8 @@ public static class Program
 
         // --- Report ---
         await new ConsoleReporter().GenerateAsync(report, outDir);
+        if (settings.Output.GenerateHtml)
+            await new HtmlReporter().GenerateAsync(report, outDir);
         Console.WriteLine($"\nReport written to {Path.GetFullPath(outDir)}");
         return 0;
     }
