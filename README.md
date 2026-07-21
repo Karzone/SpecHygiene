@@ -6,14 +6,11 @@
 </p>
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/v/SpecHygiene.svg?logo=nuget&label=NuGet" alt="NuGet"></a>
-  <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/dt/SpecHygiene.svg?logo=nuget&label=downloads" alt="NuGet downloads"></a>
+  <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/v/SpecHygiene.svg?logo=nuget&label=NuGet&cacheSeconds=600" alt="NuGet"></a>
   <a href="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml"><img src="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
+  <img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8, 9, 10">
   <img src="https://img.shields.io/badge/tests-217%20passing-brightgreen" alt="217 tests passing">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
-  <img src="https://img.shields.io/badge/AI-none-lightgrey" alt="No AI">
-  <img src="https://img.shields.io/badge/network-none-lightgrey" alt="No network">
 </p>
 
 ---
