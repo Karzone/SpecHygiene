@@ -6,6 +6,8 @@
 </p>
 
 <p align="center">
+  <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/v/SpecHygiene.svg?logo=nuget&label=NuGet" alt="NuGet"></a>
+  <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/dt/SpecHygiene.svg?logo=nuget&label=downloads" alt="NuGet downloads"></a>
   <a href="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml"><img src="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
   <img src="https://img.shields.io/badge/tests-217%20passing-brightgreen" alt="217 tests passing">
@@ -33,24 +35,33 @@ definitions no scenario uses, feature files with broken data, and copy-pasted sc
 | **Data errors** | Feature-file problems: undefined `<placeholders>`, a `Scenario` that has an `Examples:` table (should be a `Scenario Outline`), malformed data tables, unresolved `@DataSource` CSVs. |
 | **Duplicate scenarios** | Exact, containment (superset/subset), and near-duplicate scenarios — deterministic, value-sensitive step-fingerprint matching. |
 
-## Requirements
+## Install
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download) or later — cross-platform (Windows, macOS, Linux).
+The easiest way — as a .NET global tool (requires the [.NET 8 SDK](https://dotnet.microsoft.com/download) or later):
 
-## Quick start
+```bash
+dotnet tool install -g SpecHygiene
+spechygiene /path/to/your/solution
+```
+
+Update later with `dotnet tool update -g SpecHygiene`.
+
+<details>
+<summary><strong>Run from source instead</strong></summary>
 
 ```bash
 git clone https://github.com/Karzone/SpecHygiene.git
 cd SpecHygiene
 dotnet build -c Release
-
-# Run every check against your solution or folder
 dotnet run --project src/SpecHygiene -- /path/to/your/solution
 ```
+</details>
 
 Try it on the bundled demo first:
 
 ```bash
+spechygiene ./samples/demo          # if installed as a tool
+# or
 dotnet run --project src/SpecHygiene -- ./samples/demo
 ```
 
