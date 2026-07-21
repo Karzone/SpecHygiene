@@ -37,7 +37,7 @@ definitions no scenario uses, feature files with broken data, and copy-pasted sc
 
 ## Install
 
-The easiest way — as a .NET global tool (requires the [.NET 8 SDK](https://dotnet.microsoft.com/download) or later):
+The easiest way — as a .NET global tool:
 
 ```bash
 dotnet tool install -g SpecHygiene
@@ -45,6 +45,8 @@ spechygiene /path/to/your/solution
 ```
 
 Update later with `dotnet tool update -g SpecHygiene`.
+
+Requires the [.NET SDK](https://dotnet.microsoft.com/download) (8 or later) to install. The tool runs on **.NET 8, 9, and 10** — and it analyses source, so it works on codebases targeting any of them, including .NET 10 / C# 14.
 
 <details>
 <summary><strong>Run from source instead</strong></summary>

@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-07-21
+
+### Changed
+- Upgraded the Roslyn analyzer (`Microsoft.CodeAnalysis.CSharp`) to 4.14.0 for full **C# 14 / .NET 10** source parsing. The tool already ran on .NET 8/9/10 (a `net8.0` tool rolls forward); this ensures the newest language syntax in .NET 10 codebases is parsed cleanly.
+
 ## [1.0.0] — 2026-07-21
 
 First release.
@@ -18,4 +23,5 @@ First release.
 - Cross-platform .NET 8 CLI, also distributed as a `dotnet tool` (`dotnet tool install -g SpecHygiene`).
 - 217 tests, including a matcher eval corpus whose expected results are pinned to real Reqnroll runtime behaviour.
 
+[1.0.1]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.0
