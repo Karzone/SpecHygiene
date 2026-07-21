@@ -1,12 +1,27 @@
-# SpecHygiene
+<h1 align="center">SpecHygiene</h1>
 
-**Static hygiene checks for [Reqnroll](https://reqnroll.net/) / SpecFlow BDD solutions.**
+<p align="center">
+  <strong>Static hygiene checks for <a href="https://reqnroll.net/">Reqnroll</a> / SpecFlow BDD solutions.</strong><br>
+  Find the dead weight — unused code, unused step definitions, broken feature data, and duplicate scenarios.
+</p>
 
-Point it at your solution folder and it finds the dead weight — unused code, step
-definitions no scenario uses, broken feature-file data, and duplicate scenarios.
-Pure static analysis: **no network, no AI, no test run required.**
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
+  <img src="https://img.shields.io/badge/tests-217%20passing-brightgreen" alt="217 tests passing">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
+  <img src="https://img.shields.io/badge/AI-none-lightgrey" alt="No AI">
+  <img src="https://img.shields.io/badge/network-none-lightgrey" alt="No network">
+</p>
 
 ---
+
+Point it at your solution folder and it reports what's rotting: C# no one calls, step
+definitions no scenario uses, feature files with broken data, and copy-pasted scenarios.
+**Pure static analysis — no network, no AI, no test run required.**
+
+## See it in action
+
+▶ **[View a live sample report](https://htmlpreview.github.io/?https://github.com/Karzone/SpecHygiene/blob/main/docs/sample-report.html)** — generated from the tiny demo in [`samples/demo`](samples/demo), it shows a finding in each of the four checks.
 
 ## What it checks
 
@@ -19,38 +34,26 @@ Pure static analysis: **no network, no AI, no test run required.**
 
 ## Requirements
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download) or later.
-- Cross-platform: Windows, macOS, Linux.
+- [.NET 8 SDK](https://dotnet.microsoft.com/download) or later — cross-platform (Windows, macOS, Linux).
 
-## Install & build
+## Quick start
 
 ```bash
 git clone https://github.com/Karzone/SpecHygiene.git
 cd SpecHygiene
 dotnet build -c Release
-```
 
-## Usage
-
-Run every check against a solution or folder:
-
-```bash
+# Run every check against your solution or folder
 dotnet run --project src/SpecHygiene -- /path/to/your/solution
 ```
 
-Run a single check:
+Try it on the bundled demo first:
 
 ```bash
-dotnet run --project src/SpecHygiene -- /path/to/your/solution --unused-steps
+dotnet run --project src/SpecHygiene -- ./samples/demo
 ```
 
-Combine checks and choose an output folder:
-
-```bash
-dotnet run --project src/SpecHygiene -- /path/to/your/solution --unused-code --data-errors --out ./hygiene
-```
-
-### Command reference
+## Usage
 
 ```
 spechygiene <path> [checks] [--out <dir>]
@@ -67,26 +70,53 @@ Options:
   -h, --help        Show this help
 ```
 
-> **Tip:** after `dotnet build`, you can run the compiled binary directly:
+Examples:
+
+```bash
+# Just the unused-step-definition check
+dotnet run --project src/SpecHygiene -- /path/to/solution --unused-steps
+
+# Two checks, custom output folder
+dotnet run --project src/SpecHygiene -- /path/to/solution --unused-code --data-errors --out ./hygiene
+```
+
+> **Tip:** after `dotnet build`, run the compiled binary directly:
 > `./src/SpecHygiene/bin/Release/net8.0/spechygiene <path>`
 
-## Output
+## The report
 
-Every run writes two files to the output directory (default `./reports`):
+Every run writes to the output directory (default `./reports`):
 
-- **`spechygiene-report.html`** — a self-contained HTML report (open it in any
-  browser; no assets, no internet needed). Summary cards per check plus tables of
-  every finding with file/line locations. Light- and dark-mode aware.
-- **`summary.txt`** — a plain-text summary of the counts, handy for CI logs.
+| File | What it is |
+|------|-----------|
+| **`spechygiene-report.html`** | A self-contained HTML report — summary cards per check plus a table of every finding with file/line locations. Light- & dark-mode aware. |
+| **`summary.txt`** | A plain-text summary of the counts — handy for CI logs. |
 
 The console prints the same summary as it runs.
 
+**How the HTML is generated** — it's produced automatically on every run (unless you set
+`Output.GenerateHtml` to `false` in `appsettings.json`). It's a **single file with all CSS
+inlined and no JavaScript or external assets**, so it works completely offline and is safe to
+email or archive.
+
+**How to view it** — just open the file in any browser:
+
+```bash
+# macOS
+open reports/spechygiene-report.html
+# Windows
+start reports\spechygiene-report.html
+# Linux
+xdg-open reports/spechygiene-report.html
+```
+
+Or see the **[live sample report](https://htmlpreview.github.io/?https://github.com/Karzone/SpecHygiene/blob/main/docs/sample-report.html)** rendered straight from this repo.
+
 ## Configuration
 
-Defaults live in [`src/SpecHygiene/appsettings.json`](src/SpecHygiene/appsettings.json)
-and can be tuned — scan paths, feature-file patterns, step-definition file globs,
-exclusion lists, thresholds, and which checks are enabled. Command-line flags take
-precedence for the scan path and which checks run. A minimal example:
+Defaults live in [`src/SpecHygiene/appsettings.json`](src/SpecHygiene/appsettings.json) and can
+be tuned — scan paths, feature-file patterns, step-definition globs, exclusion lists, thresholds,
+and which checks are enabled. Command-line flags win for the scan path and which checks run.
 
 ```json
 {
@@ -96,24 +126,21 @@ precedence for the scan path and which checks run. A minimal example:
 }
 ```
 
-> `UnusedCodeAnalysis.IncludePublicMembers` is **off** by default: in solutions with
-> DI, controllers, serialization, or reflection, public members are often reached by
-> call paths no static analyzer can see, so flagging them is noisy. Private + internal
-> members are assembly-scoped — that's where dead-code detection is sound. Turn it on
-> for a stricter (noisier) sweep.
+> `UnusedCodeAnalysis.IncludePublicMembers` is **off** by default: in solutions with DI,
+> controllers, serialization, or reflection, public members are often reached by call paths no
+> static analyzer can see, so flagging them is noisy. Private + internal members are
+> assembly-scoped — that's where dead-code detection is sound. Turn it on for a stricter sweep.
 
 ## How it works
 
-- **Unused step definitions** parse your `*Steps.cs` with Roslyn to discover bindings
-  (honouring `[Binding]` inheritance and bare method-name-convention bindings), then
-  match every feature-file step against them using the same expression semantics
-  Reqnroll uses at runtime — Cucumber expressions, regex, optional text `(s)`,
-  alternation `a/b`, and parameter types. A step that binds is "used"; a binding no
-  step reaches is reported as unused.
-- **Unused code** builds a Roslyn compilation and walks symbol references, so an
-  overload that merely *looks* called by name is judged correctly. Test methods,
-  hooks, controllers, and serialization entry points are excluded by attribute so
-  they aren't false-flagged.
+- **Unused step definitions** — parse your `*Steps.cs` with Roslyn to discover bindings (honouring
+  `[Binding]` inheritance and bare method-name-convention bindings), then match every feature-file
+  step against them using the same expression semantics Reqnroll uses at runtime — Cucumber
+  expressions, regex, optional text `(s)`, alternation `a/b`, and parameter types. A step that
+  binds is "used"; a binding no step reaches is reported as unused.
+- **Unused code** — build a Roslyn compilation and walk symbol references, so an overload that
+  merely *looks* called by name is judged correctly. Test methods, hooks, controllers, and
+  serialization entry points are excluded by attribute so they aren't false-flagged.
 - **Data errors** and **duplicates** come from a single cheap feature-file parse pass.
 
 ## Development
@@ -123,17 +150,20 @@ dotnet build     # build the solution
 dotnet test      # run the test suite (217 tests)
 ```
 
-Layout:
-
 ```
 src/SpecHygiene         # the CLI + analysis engine
 tests/SpecHygiene.Tests # xUnit tests, incl. a matcher eval corpus
+samples/demo            # a tiny solution that triggers every check
 ```
 
-The matcher tests include an **eval corpus** — binding/step cases whose expected
-results are pinned to real Reqnroll runtime behaviour, so changes to the matching
-logic are gated against ground truth rather than intuition.
+The matcher tests include an **eval corpus** — binding/step cases whose expected results are
+pinned to real Reqnroll runtime behaviour, so changes to the matching logic are gated against
+ground truth rather than intuition.
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `dotnet test` before opening a PR.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE) © Karthik Kalaiyarasu
