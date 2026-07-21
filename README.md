@@ -6,6 +6,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml"><img src="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 8">
   <img src="https://img.shields.io/badge/tests-217%20passing-brightgreen" alt="217 tests passing">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
@@ -21,7 +22,7 @@ definitions no scenario uses, feature files with broken data, and copy-pasted sc
 
 ## See it in action
 
-▶ **[View a live sample report](https://htmlpreview.github.io/?https://github.com/Karzone/SpecHygiene/blob/main/docs/sample-report.html)** — generated from the tiny demo in [`samples/demo`](samples/demo), it shows a finding in each of the four checks.
+▶ **[View a live sample report](https://karzone.github.io/SpecHygiene/sample-report.html)** — generated from the tiny demo in [`samples/demo`](samples/demo), it shows a finding in each of the four checks.
 
 ## What it checks
 
@@ -110,7 +111,7 @@ start reports\spechygiene-report.html
 xdg-open reports/spechygiene-report.html
 ```
 
-Or see the **[live sample report](https://htmlpreview.github.io/?https://github.com/Karzone/SpecHygiene/blob/main/docs/sample-report.html)** rendered straight from this repo.
+Or see the **[live sample report](https://karzone.github.io/SpecHygiene/sample-report.html)** rendered straight from this repo.
 
 ## Configuration
 

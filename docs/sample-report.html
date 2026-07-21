@@ -1,31 +1,89 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SpecHygiene report</title><style>:root { --bg:#0f1420; --panel:#171d2b; --line:#26304a; --txt:#e6e9f0; --dim:#8a94ab;
-        --accent:#4dabf7; --ok:#37b24d; --warn:#f59f00; --bad:#e64980; }
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SpecHygiene report</title><style>:root {
+  --bg:#0d1117; --panel:#141b26; --panel2:#0f1620; --line:#232d3d; --txt:#e7ebf2; --dim:#8b95a9;
+  --accent:#5aa9f2; --ok:#3fb950; --warn:#e3a008; --bad:#f0517a;
+  --shadow:0 1px 0 rgba(255,255,255,.02), 0 8px 24px rgba(0,0,0,.25);
+}
 * { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 body { margin:0; background:var(--bg); color:var(--txt);
-       font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
-header,section,footer { max-width:1100px; margin:0 auto; padding:0 24px; }
-header { padding-top:40px; }
-h1 { margin:0; font-size:28px; letter-spacing:-.5px; }
-h2 { margin:0 0 4px; font-size:20px; }
-h3 { margin:24px 0 8px; font-size:15px; color:var(--dim); text-transform:uppercase; letter-spacing:.5px; }
-h3 .count { color:var(--txt); background:var(--line); border-radius:10px; padding:1px 8px; font-size:12px; }
-.sub { color:var(--dim); margin:4px 0 0; }
-.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin:24px 0 8px; }
-.card { background:var(--panel); border:1px solid var(--line); border-left-width:4px; border-radius:10px; padding:16px; display:flex; flex-direction:column; }
-.card .n { font-size:30px; font-weight:700; }
-.card .l { color:var(--dim); font-size:13px; }
-.card.ok { border-left-color:var(--ok); } .card.warn { border-left-color:var(--warn); } .card.bad { border-left-color:var(--bad); }
-section { margin-top:44px; }
-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px; overflow-x:auto; display:block; }
-thead th { text-align:left; color:var(--dim); font-weight:600; border-bottom:1px solid var(--line); padding:8px 10px; white-space:nowrap; }
-tbody td { padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
-tbody tr:hover { background:rgba(255,255,255,.02); }
-.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12.5px; }
-.dim { color:var(--dim); }
-.tag { background:var(--line); color:var(--accent); border-radius:6px; padding:2px 7px; font-size:11px; font-weight:600; }
-.empty { color:var(--ok); background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-top:12px; }
-footer { color:var(--dim); font-size:12.5px; text-align:center; margin:60px auto 40px; padding-top:20px; border-top:1px solid var(--line); }
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+main { max-width:1080px; margin:0 auto; padding:0 22px 60px; }
+
+/* ---- dashboard ---- */
+header { padding:36px 0 8px; }
+.top { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.brand { display:flex; align-items:center; gap:14px; }
+.logo { width:44px; height:44px; display:grid; place-items:center; border-radius:12px;
+        background:linear-gradient(135deg,#1d4ed8,#0891b2); color:#fff; font-size:22px; box-shadow:var(--shadow); }
+h1 { margin:0; font-size:24px; letter-spacing:-.4px; }
+.tagline { color:var(--dim); font-size:13px; }
+.status { padding:7px 14px; border-radius:999px; font-size:13px; font-weight:700; border:1px solid transparent; }
+.status.ok  { color:var(--ok);  background:rgba(63,185,80,.10);  border-color:rgba(63,185,80,.30); }
+.status.warn{ color:var(--warn);background:rgba(227,160,8,.10);  border-color:rgba(227,160,8,.30); }
+.status.bad { color:var(--bad); background:rgba(240,81,122,.10); border-color:rgba(240,81,122,.30); }
+.scan { color:var(--dim); font-size:13px; margin:14px 0 22px; }
+.scan .dot { margin:0 8px; opacity:.5; }
+
+.dash { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+.metric { display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit;
+          background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px;
+          box-shadow:var(--shadow); transition:transform .12s ease, border-color .12s ease; position:relative; overflow:hidden; }
+.metric::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--dim); }
+.metric.ok::before { background:var(--ok); } .metric.warn::before { background:var(--warn); } .metric.bad::before { background:var(--bad); }
+.metric:hover { transform:translateY(-2px); border-color:#31405a; }
+.mi { width:38px; height:38px; flex:0 0 auto; display:grid; place-items:center; border-radius:10px;
+      background:var(--panel2); color:var(--accent); }
+.metric.ok .mi { color:var(--ok); } .metric.warn .mi { color:var(--warn); } .metric.bad .mi { color:var(--bad); }
+.mi svg { width:20px; height:20px; }
+.mt { display:flex; flex-direction:column; line-height:1.1; margin-right:auto; }
+.mt .n { font-size:28px; font-weight:800; letter-spacing:-.5px; }
+.mt .l { color:var(--dim); font-size:12.5px; margin-top:3px; }
+.mstat { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--dim); align-self:flex-start; }
+.metric.ok .mstat { color:var(--ok); } .metric.warn .mstat { color:var(--warn); } .metric.bad .mstat { color:var(--bad); }
+
+/* ---- collapsible checks ---- */
+.check { background:var(--panel); border:1px solid var(--line); border-radius:14px; margin-top:18px;
+         box-shadow:var(--shadow); overflow:hidden; }
+summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:12px; padding:16px 18px;
+          user-select:none; }
+summary::-webkit-details-marker { display:none; }
+summary:hover { background:rgba(255,255,255,.015); }
+.chev { color:var(--dim); display:grid; place-items:center; transition:transform .18s ease; }
+.chev svg { width:16px; height:16px; }
+.check[open] > summary .chev { transform:rotate(90deg); }
+.si { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; background:var(--panel2); color:var(--accent); flex:0 0 auto; }
+.check.ok .si { color:var(--ok); } .check.warn .si { color:var(--warn); } .check.bad .si { color:var(--bad); }
+.si svg { width:17px; height:17px; }
+.stitle { font-size:16px; font-weight:700; }
+.pill { min-width:24px; text-align:center; padding:2px 9px; border-radius:999px; font-size:12.5px; font-weight:700;
+        background:var(--panel2); border:1px solid var(--line); color:var(--dim); }
+.check.warn .pill { color:var(--warn); border-color:rgba(227,160,8,.35); }
+.check.bad .pill  { color:var(--bad);  border-color:rgba(240,81,122,.35); }
+.check.ok .pill   { color:var(--ok);   border-color:rgba(63,185,80,.30); }
+.ssub { color:var(--dim); font-size:12.5px; margin-left:auto; text-align:right; }
+.body { padding:4px 18px 20px; border-top:1px solid var(--line); }
+
+h3 { margin:20px 0 6px; font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.7px; display:flex; align-items:center; gap:8px; }
+h3 .count { color:var(--txt); background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:1px 8px; font-size:11px; }
+
+table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13.5px; display:block; overflow-x:auto; }
+thead th { text-align:left; color:var(--dim); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px;
+           border-bottom:1px solid var(--line); padding:9px 12px; white-space:nowrap; }
+tbody td { padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+tbody tr:last-child td { border-bottom:0; }
+tbody tr:hover { background:rgba(90,169,242,.05); }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; }
+.sm { font-size:11.5px; } .strong { font-weight:600; } .dim { color:var(--dim); }
+.tag { display:inline-block; background:var(--panel2); color:var(--accent); border:1px solid var(--line);
+       border-radius:6px; padding:2px 8px; font-size:11px; font-weight:700; }
+.clean { display:flex; align-items:center; gap:10px; color:var(--dim); padding:14px 2px 6px; font-size:14px; }
+.dotok { width:9px; height:9px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 3px rgba(63,185,80,.15); flex:0 0 auto; }
+
+footer { color:var(--dim); font-size:12.5px; text-align:center; margin-top:46px; padding-top:22px; border-top:1px solid var(--line); }
+
 @media (prefers-color-scheme:light) {
-  :root { --bg:#f7f8fa; --panel:#fff; --line:#e2e6ee; --txt:#1a2030; --dim:#6b7488; }
-  tbody tr:hover { background:rgba(0,0,0,.02); }
-}</style></head><body><header><h1>SpecHygiene</h1><p class="sub">Scanned 1 feature file(s), 3 scenario(s), 9 step(s) · 2026-07-21 21:15</p><div class="cards"><div class="card warn"><span class="n">1</span><span class="l">Unused code</span></div><div class="card warn"><span class="n">1</span><span class="l">Unused step defs</span></div><div class="card bad"><span class="n">1</span><span class="l">Data errors</span></div><div class="card warn"><span class="n">2</span><span class="l">Duplicates</span></div></div></header><section id="unused-code"><h2>Unused code</h2><p class="sub">1 element(s) with no references &#183; scanned 1 method(s), 2 class(es), 0 interface(s)</p><table><thead><tr><th>Kind</th><th>Element</th><th>Containing type</th><th>Visibility</th><th>Location</th></tr></thead><tbody><tr><td><span class="tag">Method</span></td><td class="mono">LegacyDiscount</td><td class="mono dim">PriceHelper</td><td>private</td><td class="mono dim">Helpers/PriceHelper.cs:8</td></tr></tbody></table></section><section id="unused-steps"><h2>Unused step definitions</h2><p class="sub">Coverage 75.0% &#183; 3/4 bindings used &#183; 1 unused</p><table><thead><tr><th>Kind</th><th>Pattern</th><th>Method</th><th>Location</th></tr></thead><tbody><tr><td><span class="tag">Then</span></td><td class="mono">the cart is sorted alphabetically</td><td class="mono dim">CartSteps.ThenTheCartIsSortedAlphabetically</td><td class="mono dim">Steps/CartSteps.cs:18</td></tr></tbody></table></section><section id="data-errors"><h2>Data errors</h2><p class="sub">1 feature-file issue(s)</p><h3>Scenario with examples <span class="count">1</span></h3><table><thead><tr><th>Scenario</th><th>Detail</th><th>Location</th></tr></thead><tbody><tr><td>Checkout shows the total</td><td class="mono">Scenario: Checkout shows the total</td><td class="mono dim">ShoppingCart.feature:13</td></tr></tbody></table></section><section id="duplicates"><h2>Duplicate scenarios &amp; steps</h2><p class="sub">0 duplicate scenario group(s) &#183; 2 duplicated step(s)</p><h3>Duplicated steps</h3><table><thead><tr><th>Step</th><th>Occurrences</th></tr></thead><tbody><tr><td class="mono">I add &quot;Widget&quot; to the cart</td><td>3</td></tr><tr><td class="mono">the cart contains 1 item</td><td>2</td></tr></tbody></table></section><footer>Generated by <strong>SpecHygiene</strong> — static hygiene checks for Reqnroll / SpecFlow. No AI, no network.</footer></body></html>
+  :root { --bg:#f6f8fb; --panel:#ffffff; --panel2:#f1f4f9; --line:#e4e9f0; --txt:#101828; --dim:#697488;
+          --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.06); }
+  tbody tr:hover { background:rgba(29,78,216,.04); }
+}
+@media (max-width:640px) { .ssub { display:none; } }</style></head><body><main><header><div class="top"><div class="brand"><span class="logo">◈</span><div><h1>SpecHygiene</h1><span class="tagline">Reqnroll / SpecFlow hygiene report</span></div></div><span class="status bad">5 findings</span></div><p class="scan">Scanned 1 feature file(s) · 3 scenario(s) · 9 step(s)<span class="dot">·</span>2026-07-21 21:24</p><div class="dash"><a class="metric warn" href="#unused-code"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span><span class="mt"><span class="n">1</span><span class="l">Unused code</span></span><span class="mstat">review</span></a><a class="metric warn" href="#unused-steps"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span class="mt"><span class="n">1</span><span class="l">Unused step defs</span></span><span class="mstat">review</span></a><a class="metric bad" href="#data-errors"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span class="mt"><span class="n">1</span><span class="l">Data errors</span></span><span class="mstat">review</span></a><a class="metric warn" href="#duplicates"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span><span class="mt"><span class="n">2</span><span class="l">Duplicates</span></span><span class="mstat">review</span></a></div></header><details id="unused-code" class="check warn" open><summary><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span><span class="stitle">Unused code</span><span class="pill">1</span><span class="ssub">1 element(s) with no references &#183; scanned 1 method(s), 2 class(es), 0 interface(s)</span></summary><div class="body"><table><thead><tr><th>Kind</th><th>Element</th><th>Containing type</th><th>Visibility</th><th>Location</th></tr></thead><tbody><tr><td><span class="tag">Method</span></td><td class="mono strong">LegacyDiscount</td><td class="mono dim">PriceHelper</td><td>private</td><td class="mono dim">Helpers/PriceHelper.cs:8</td></tr></tbody></table></div></details><details id="unused-steps" class="check warn" open><summary><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span class="stitle">Unused step definitions</span><span class="pill">1</span><span class="ssub">Coverage 75.0% &#183; 3/4 bindings used &#183; 1 unused</span></summary><div class="body"><table><thead><tr><th>Kind</th><th>Pattern</th><th>Method</th><th>Location</th></tr></thead><tbody><tr><td><span class="tag">Then</span></td><td class="mono strong">the cart is sorted alphabetically</td><td class="mono dim">CartSteps.ThenTheCartIsSortedAlphabetically</td><td class="mono dim">Steps/CartSteps.cs:18</td></tr></tbody></table></div></details><details id="data-errors" class="check bad" open><summary><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><span class="stitle">Data errors</span><span class="pill">1</span><span class="ssub">1 feature-file issue(s)</span></summary><div class="body"><h3>Scenario with examples<span class="count">1</span></h3><table><thead><tr><th>Scenario</th><th>Detail</th><th>Location</th></tr></thead><tbody><tr><td>Checkout shows the total</td><td class="mono">Scenario: Checkout shows the total</td><td class="mono dim">ShoppingCart.feature:13</td></tr></tbody></table></div></details><details id="duplicates" class="check warn" open><summary><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span><span class="stitle">Duplicate scenarios &amp; steps</span><span class="pill">2</span><span class="ssub">0 duplicate scenario group(s) &#183; 2 duplicated step(s)</span></summary><div class="body"><h3>Duplicated steps<span class="count">2</span></h3><table><thead><tr><th>Step</th><th>Occurrences</th></tr></thead><tbody><tr><td class="mono">I add &quot;Widget&quot; to the cart</td><td class="strong">3</td></tr><tr><td class="mono">the cart contains 1 item</td><td class="strong">2</td></tr></tbody></table></div></details><footer>Generated by <strong>SpecHygiene</strong> — static hygiene checks for Reqnroll / SpecFlow. No AI, no network.</footer></main></body></html>
