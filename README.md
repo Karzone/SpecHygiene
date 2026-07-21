@@ -49,6 +49,24 @@ flags take precedence for the scan path and which checks run.
 
 - .NET 8 SDK or later. Cross-platform (Windows, macOS, Linux).
 
+## Development
+
+```bash
+dotnet build          # build the solution
+dotnet test           # run the test suite
+```
+
+Layout:
+
+```
+src/SpecHygiene         # the CLI + analysis engine
+tests/SpecHygiene.Tests # xUnit tests, incl. a matcher eval corpus
+```
+
+The matcher tests include an **eval corpus** — a set of binding/step cases whose
+expected results are pinned to real Reqnroll runtime behaviour, so changes to the
+step-matching logic are gated against ground truth rather than intuition.
+
 ## How it works
 
 - **Unused step definitions** parse your `*Steps.cs` via Roslyn to discover bindings
