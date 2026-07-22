@@ -63,6 +63,17 @@ public class UnusedCodeAnalyzer
         Console.WriteLine($"         OK Found {files.Count} C# files");
         if (files.Count == 0) return report;
 
+        // Names referenced from XAML — event handlers (Click="Foo"), x:Name, binding paths, command
+        // and converter refs, control types. These are real usages the C#-only reference graph cannot
+        // see, so a match SUPPRESSES an unused verdict (unlike the string-literal channel below, which
+        // only annotates: XAML is a definite reference, not a maybe-reflection guess). Extracted from
+        // reference POSITIONS only — quoted attribute values and {markup extensions} — never attribute
+        // or element names, so a dead method that merely shares a name with a XAML attribute (Content=,
+        // Text=) is still reported.
+        var xamlNames = CollectXamlReferencedNames(roots);
+        if (xamlNames.Count > 0)
+            Console.WriteLine($"         OK Indexed {xamlNames.Count} name(s) referenced from .xaml");
+
         // Phase 2: parse + compile.
         Console.WriteLine("Phase 2/3: Parsing and building the semantic model...");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Latest);
@@ -186,6 +197,7 @@ public class UnusedCodeAnalyzer
         var typeCands = candidates.Where(c => c.Value.Kind == SymbolKind.NamedType).ToList();
 
         var consideredMethods = 0; var consideredClasses = 0; var consideredInterfaces = 0;
+        var xamlSuppressed = 0;
 
         foreach (var (sym, info) in methodCands)
         {
@@ -193,8 +205,11 @@ public class UnusedCodeAnalyzer
             if (!ShouldConsiderMethod(m)) continue;
             consideredMethods++;
             if (!referenced.Contains(m))
+            {
+                if (xamlNames.Contains(m.Name)) { xamlSuppressed++; continue; }   // wired via XAML
                 report.UnusedMethods.Add(ToInfo(m, info.Decl, CodeElementType.Method,
                     "No references found (semantic)"));
+            }
         }
 
         foreach (var (sym, info) in typeCands)
@@ -206,6 +221,7 @@ public class UnusedCodeAnalyzer
 
             if (!ShouldConsiderType(t)) continue;
             if (referenced.Contains(t)) continue;
+            if (xamlNames.Contains(t.Name)) { xamlSuppressed++; continue; }   // referenced in XAML
 
             if (isInterface)
                 report.UnusedInterfaces.Add(ToInfo(t, info.Decl, CodeElementType.Interface,
@@ -241,6 +257,8 @@ public class UnusedCodeAnalyzer
         Console.WriteLine($"   Unused methods:    {report.UnusedMethods.Count} of {consideredMethods} ({report.UnusedMethodPercentage:F1}%)");
         Console.WriteLine($"   Unused classes:    {report.UnusedClasses.Count} of {consideredClasses}");
         Console.WriteLine($"   Unused interfaces: {report.UnusedInterfaces.Count} of {consideredInterfaces}");
+        if (xamlSuppressed > 0)
+            Console.WriteLine($"   NOTE: {xamlSuppressed} candidate(s) excluded as referenced from XAML (event handlers / bindings)");
         if (report.StringLiteralHintCount > 0)
             Console.WriteLine($"   NOTE: {report.StringLiteralHintCount} finding(s) share a name with a string literal - check for reflection before deleting");
         Console.WriteLine($"   Scope: {report.ScannedRoots.Count} root(s), {report.TotalFilesScanned} files (path-based, not solution-wide)");
@@ -430,6 +448,43 @@ public class UnusedCodeAnalyzer
                 .Where(f => !IsExcludedFile(f)));
         }
         return files.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    // Quoted attribute VALUES ("...") and {markup extension} bodies — the reference positions in XAML.
+    // Deliberately NOT attribute/element names, so common attribute words (Content, Text, Command, …)
+    // don't suppress a genuinely-dead method that merely shares the name.
+    private static readonly Regex XamlValueOrMarkup = new("\"([^\"]*)\"|\\{([^}]*)\\}", RegexOptions.Compiled);
+    private static readonly Regex XamlIdentifierToken = new(@"[A-Za-z_][A-Za-z0-9_]*", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Identifiers referenced from .xaml under the roots — event handlers, x:Name, binding paths,
+    /// command/converter refs, control types. A match SUPPRESSES an unused verdict, because a XAML
+    /// reference is a genuine (framework-wired) usage the C# reference graph can't see. Extracted from
+    /// reference positions only (attribute values and markup extensions), never attribute/element names.
+    /// </summary>
+    internal HashSet<string> CollectXamlReferencedNames(IEnumerable<string> roots)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var directory in roots.Where(Directory.Exists))
+        {
+            foreach (var xaml in Directory.GetFiles(directory, "*.xaml", SearchOption.AllDirectories))
+            {
+                if (_settings.ExcludeDirectories.Any(ex =>
+                        xaml.Contains(Path.DirectorySeparatorChar + ex + Path.DirectorySeparatorChar)))
+                    continue;
+
+                string text;
+                try { text = File.ReadAllText(xaml); } catch { continue; }
+
+                foreach (Match m in XamlValueOrMarkup.Matches(text))
+                {
+                    var value = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
+                    foreach (Match tok in XamlIdentifierToken.Matches(value))
+                        names.Add(tok.Value);
+                }
+            }
+        }
+        return names;
     }
 
     private bool IsExcludedFile(string filePath)

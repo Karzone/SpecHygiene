@@ -175,9 +175,19 @@ public sealed class HtmlReporter : IReporter
         if (stepDupes.Count > 0)
         {
             sb.Append("<h3>Duplicated steps<span class=\"count\">" + stepDupes.Count + "</span></h3>");
-            sb.Append("<table><thead><tr><th>Step</th><th>Occurrences</th></tr></thead><tbody>");
+            sb.Append("<table><thead><tr><th>Step</th><th>Count</th><th>Locations</th></tr></thead><tbody>");
             foreach (var g in stepDupes)
-                sb.Append($"<tr><td class=\"mono\">{E(g.StepPattern)}</td><td class=\"strong\">{g.Occurrences.Count}</td></tr>");
+            {
+                var locs = string.Join("<br>", g.Occurrences
+                    .OrderBy(o => o.FeatureFile).ThenBy(o => o.LineNumber)
+                    .Select(o => $"{E(o.FeatureFile)}:{o.LineNumber}"
+                                 + (string.IsNullOrEmpty(o.Scenario) ? "" : $" <span class=\"dim\">— {E(o.Scenario)}</span>")));
+                sb.Append("<tr>");
+                sb.Append($"<td class=\"mono\">{E(g.StepPattern)}</td>");
+                sb.Append($"<td class=\"strong\">{g.Occurrences.Count}</td>");
+                sb.Append($"<td class=\"mono sm\">{locs}</td>");
+                sb.Append("</tr>");
+            }
             sb.Append("</tbody></table>");
         }
         Close(sb);

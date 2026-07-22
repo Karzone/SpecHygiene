@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] — 2026-07-22
+
+### Fixed
+- **Unused code — WPF/XAML false positives.** Event handlers and other XAML-wired members (bindings, converters, control types, `x:Name`) are no longer reported as dead code — XAML is now scanned as a reference source. On a real WPF-backed solution this cut false positives from **69 → 10**. Extraction is position-scoped (attribute values + `{markup extensions}`), so a genuinely-dead method that merely shares a name with a XAML attribute is still reported.
+
+### Added
+- **Duplicate steps report** now lists the `file:line` (and scenario) of every occurrence, so findings are directly actionable.
+
 ## [1.0.1] — 2026-07-21
 
 ### Changed
@@ -23,5 +31,6 @@ First release.
 - Cross-platform .NET 8 CLI, also distributed as a `dotnet tool` (`dotnet tool install -g SpecHygiene`).
 - 217 tests, including a matcher eval corpus whose expected results are pinned to real Reqnroll runtime behaviour.
 
+[1.0.2]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.0
