@@ -135,8 +135,13 @@ public class CoverageAnalysisSettings
         "@ignore", "@skip", "@wip", "@pending", "@manual", "@disabled"
     };
 
-    /// <summary>Include steps from ignored scenarios in the analysis.</summary>
-    public bool IncludeIgnoredScenarios { get; set; } = false;
+    /// <summary>
+    /// Count steps used in ignored / skipped (@ignore, @wip, …) scenarios as USED. Default true: a
+    /// step referenced only by a temporarily-disabled test is not dead code — the test still needs it,
+    /// and flagging it would tell you to delete a step a soon-to-be-re-enabled scenario depends on.
+    /// Set false to measure coverage by ACTIVE scenarios only (stricter, but can false-flag such steps).
+    /// </summary>
+    public bool IncludeIgnoredScenarios { get; set; } = true;
 
     /// <summary>Minimum similarity (0-1) to suggest a closest match for orphaned steps.</summary>
     public double MinSimilarityForSuggestion { get; set; } = 0.5;

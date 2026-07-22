@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-07-22
+
+### Fixed
+- **Coverage false positives.** `CoverageAnalysis.IncludeIgnoredScenarios` now defaults to **true**: a step used only in an `@ignore` / `@wip` scenario is no longer reported as unused — the temporarily-disabled test still needs it. On a real suite this cut false "unused step definitions" from **175 → 7**.
+
+### Changed
+- **Data errors** are now rich, collapsible detail cards. Each category (e.g. *Scenario Outlines defined as Scenarios*, *Undefined placeholders — missing values*) folds independently so hundreds of issues stay scannable, and every card shows the specifics: the missing `<placeholders>`, the affected step text, and the Examples columns. The issue line colour-codes what a scenario **is** (red) vs what it **should be** (green), and the scenario title reads as a clear heading.
+
+### Removed
+- **Duplicate-scenarios check.** Duplicate detection is fuzzier and its tuning is solution-specific; SpecHygiene now focuses on the three universally-applicable checks — unused code, unused step definitions, and data errors. The `--duplicates` flag, its report section, and the dashboard card have been removed.
+
 ## [1.0.3] — 2026-07-22
 
 ### Changed
@@ -36,6 +47,7 @@ First release.
 - Cross-platform .NET 8 CLI, also distributed as a `dotnet tool` (`dotnet tool install -g SpecHygiene`).
 - 217 tests, including a matcher eval corpus whose expected results are pinned to real Reqnroll runtime behaviour.
 
+[1.1.0]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.1.0
 [1.0.3]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.3
 [1.0.2]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.1

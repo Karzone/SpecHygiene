@@ -2,26 +2,26 @@
 
 <p align="center">
   <strong>Find the dead weight in your <a href="https://reqnroll.net/">Reqnroll</a> / SpecFlow BDD suite.</strong><br>
-  Unused code, unused step definitions, data errors, and duplicate scenarios — pure static analysis, no AI, no network.
+  Unused code, unused step definitions, and feature-file data errors — pure static analysis, no AI, no network.
 </p>
 
 <p align="center">
   <a href="https://www.nuget.org/packages/SpecHygiene"><img src="https://img.shields.io/nuget/v/SpecHygiene.svg?logo=nuget&label=NuGet&cacheSeconds=600" alt="NuGet"></a>
   <a href="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml"><img src="https://github.com/Karzone/SpecHygiene/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8, 9, 10">
-  <img src="https://img.shields.io/badge/tests-217%20passing-brightgreen" alt="217 tests passing">
+  <img src="https://img.shields.io/badge/tests-219%20passing-brightgreen" alt="219 tests passing">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
 </p>
 
 ---
 
 Point it at your solution folder and it reports what's rotting: C# no one calls, step
-definitions no scenario uses, feature files with broken data, and copy-pasted scenarios.
+definitions no scenario uses, and feature files with broken data.
 **Pure static analysis — no network, no AI, no test run required.**
 
 ## See it in action
 
-▶ **[View a live sample report](https://karzone.github.io/SpecHygiene/sample-report.html)** — generated from the tiny demo in [`samples/demo`](samples/demo), it shows a finding in each of the four checks.
+▶ **[View a live sample report](https://karzone.github.io/SpecHygiene/sample-report.html)** — generated from the tiny demo in [`samples/demo`](samples/demo), it shows a finding in each check.
 
 ## What it checks
 
@@ -30,7 +30,6 @@ definitions no scenario uses, feature files with broken data, and copy-pasted sc
 | **Unused code** | Dead C# — methods, classes, and interfaces with no references, using Roslyn's semantic model (symbol-accurate, not text matching). |
 | **Unused step definitions** | `[Given]`/`[When]`/`[Then]` bindings that **no scenario uses**, matched with the same Cucumber-expression / regex semantics Reqnroll uses at runtime — so no false "unused". |
 | **Data errors** | Feature-file problems: undefined `<placeholders>`, a `Scenario` that has an `Examples:` table (should be a `Scenario Outline`), malformed data tables, unresolved `@DataSource` CSVs. |
-| **Duplicate scenarios** | Exact, containment (superset/subset), and near-duplicate scenarios — deterministic, value-sensitive step-fingerprint matching. |
 
 ## Install
 
@@ -73,7 +72,6 @@ Checks (default: all):
   --unused-code     Roslyn dead-code (unused methods/classes/interfaces)
   --unused-steps    Step definitions no scenario uses
   --data-errors     Feature-file data errors (undefined placeholders, etc.)
-  --duplicates      Duplicate / near-duplicate scenarios
   --all             Run every check (default when none specified)
 
 Options:
@@ -152,7 +150,7 @@ and which checks are enabled. Command-line flags win for the scan path and which
 - **Unused code** — build a Roslyn compilation and walk symbol references, so an overload that
   merely *looks* called by name is judged correctly. Test methods, hooks, controllers, and
   serialization entry points are excluded by attribute so they aren't false-flagged.
-- **Data errors** and **duplicates** come from a single cheap feature-file parse pass.
+- **Data errors** come from a single cheap feature-file parse pass.
 
 ## Development
 

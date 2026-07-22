@@ -14,10 +14,10 @@
 
     <!-- NuGet package metadata -->
     <PackageId>SpecHygiene</PackageId>
-    <Version>1.0.3</Version>
+    <Version>1.1.0</Version>
     <Authors>Karthik Kalaiyarasu</Authors>
     <Title>SpecHygiene</Title>
-    <Description>Find the dead weight in your Reqnroll / SpecFlow BDD suite — unused code, unused step definitions, data errors, and duplicate scenarios. Pure static analysis, no AI, no network.</Description>
+    <Description>Find the dead weight in your Reqnroll / SpecFlow BDD suite — unused C# code, unused step definitions, and feature-file data errors. Pure static analysis, no AI, no network.</Description>
     <PackageTags>reqnroll;specflow;bdd;gherkin;dotnet-tool;static-analysis;dead-code;roslyn;test-automation</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Karzone/SpecHygiene</PackageProjectUrl>

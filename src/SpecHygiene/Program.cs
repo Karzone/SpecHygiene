@@ -40,12 +40,11 @@ public static class Program
         }
 
         // Flags select checks; --all (or no check flag) runs everything.
-        bool any = args.Any(a => a is "--duplicates" or "--data-errors" or "--unused-steps" or "--unused-code");
+        bool any = args.Any(a => a is "--data-errors" or "--unused-steps" or "--unused-code");
         bool all = args.Contains("--all") || !any;
 
         settings.CoverageAnalysis.Enabled = all || args.Contains("--unused-steps");
         settings.UnusedCodeAnalysis.Enabled = all || args.Contains("--unused-code");
-        bool wantDuplicates = all || args.Contains("--duplicates");
         bool wantDataErrors = all || args.Contains("--data-errors");
         settings.Analysis.ShowDataErrors = wantDataErrors;
 
@@ -53,9 +52,9 @@ public static class Program
 
         Console.WriteLine($"SpecHygiene — scanning {string.Join(", ", settings.Analysis.SolutionPaths)}");
 
-        // --- Parse pass: always run it (cheap). It yields data errors, and duplicates when asked. ---
+        // --- Feature-file parse pass (cheap): yields data errors + the scan stats. No duplicate matching. ---
         var analyzer = new DuplicateAnalyzer(settings);
-        var report = await analyzer.AnalyzeAsync(skipDuplicateMatching: !wantDuplicates);
+        var report = await analyzer.AnalyzeAsync(skipDuplicateMatching: true);
 
         if (!wantDataErrors)
             report.DataErrors.Clear();
@@ -157,7 +156,6 @@ public static class Program
               --unused-code     Roslyn dead-code (unused methods/classes/interfaces)
               --unused-steps    Step definitions no scenario uses
               --data-errors     Feature-file data errors (undefined placeholders, etc.)
-              --duplicates      Duplicate / near-duplicate scenarios
               --all             Run every check (default when none specified)
 
             Options:
