@@ -21,9 +21,7 @@ public sealed class ConsoleReporter : IReporter
             $"Steps analysed        : {report.TotalStepsAnalyzed}",
             "",
             $"Data errors           : {report.DataErrors.Count}",
-            $"Scenario duplicates   : {report.ScenarioDuplicates.Count}",
-            $"Cross-project dups     : {report.CrossProjectDuplicates.Count}",
-            $"Within-project dups    : {report.WithinProjectDuplicates.Count}",
+            $"Duplicate scenarios   : {report.ScenarioDuplicates.Count}",
         };
 
         if (report.StepDefinitionCoverage is { } cov)

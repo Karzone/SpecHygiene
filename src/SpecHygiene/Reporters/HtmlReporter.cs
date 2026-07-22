@@ -45,7 +45,7 @@ public sealed class HtmlReporter : IReporter
         var dead = r.UnusedCodeReport is { } d ? d.UnusedMethods.Count + d.UnusedClasses.Count + d.UnusedInterfaces.Count : 0;
         var steps = r.StepDefinitionCoverage?.UnusedDefinitions.Count ?? 0;
         var errors = r.DataErrors.Count;
-        var dupes = r.ScenarioDuplicates.Count + r.CrossProjectDuplicates.Count + r.WithinProjectDuplicates.Count;
+        var dupes = r.ScenarioDuplicates.Count;
         var total = dead + steps + errors + dupes;
 
         sb.Append("<header>");
@@ -148,48 +148,26 @@ public sealed class HtmlReporter : IReporter
 
     private static void AppendDuplicates(StringBuilder sb, DuplicateAnalysisReport r)
     {
-        var stepDupes = r.CrossProjectDuplicates.Concat(r.WithinProjectDuplicates).ToList();
-        var count = r.ScenarioDuplicates.Count + stepDupes.Count;
-        Open(sb, "duplicates", IconDup, "Duplicate scenarios & steps", count,
-            $"{r.ScenarioDuplicates.Count} duplicate scenario group(s) · {stepDupes.Count} duplicated step(s)");
+        var groups = r.ScenarioDuplicates;
+        Open(sb, "duplicates", IconDup, "Duplicate scenarios", groups.Count,
+            $"{groups.Count} duplicate / near-duplicate scenario group(s)");
 
-        if (count == 0) { Clean(sb, "No duplicates found."); return; }
+        if (groups.Count == 0) { Clean(sb, "No duplicate scenarios found."); return; }
 
-        if (r.ScenarioDuplicates.Count > 0)
-        {
-            sb.Append("<h3>Scenario duplicates<span class=\"count\">" + r.ScenarioDuplicates.Count + "</span></h3>");
-            sb.Append("<table><thead><tr><th>Type</th><th>Scenario</th><th>Overlaps with</th><th>%</th></tr></thead><tbody>");
-            foreach (var g in r.ScenarioDuplicates)
-                foreach (var m in g.Matches)
-                {
-                    sb.Append("<tr>");
-                    sb.Append($"<td>{Tag(g.DuplicateType.ToString())}</td>");
-                    sb.Append($"<td class=\"strong\">{E(g.BaseScenario.ScenarioName)}<br><span class=\"dim mono sm\">{E(g.BaseScenario.FeatureFile)}:{g.BaseScenario.ScenarioLineNumber}</span></td>");
-                    sb.Append($"<td>{E(m.Scenario.ScenarioName)}<br><span class=\"dim mono sm\">{E(m.Scenario.FeatureFile)}:{m.Scenario.ScenarioLineNumber}</span></td>");
-                    sb.Append($"<td class=\"strong\">{m.OverlapPercentage:F0}%</td>");
-                    sb.Append("</tr>");
-                }
-            sb.Append("</tbody></table>");
-        }
-
-        if (stepDupes.Count > 0)
-        {
-            sb.Append("<h3>Duplicated steps<span class=\"count\">" + stepDupes.Count + "</span></h3>");
-            sb.Append("<table><thead><tr><th>Step</th><th>Count</th><th>Locations</th></tr></thead><tbody>");
-            foreach (var g in stepDupes)
+        // Each row is a base scenario and a scenario it duplicates/overlaps, with both locations and
+        // the match type (Exact / Superset / Subset / near-duplicate) and overlap %.
+        sb.Append("<table><thead><tr><th>Type</th><th>Scenario</th><th>Duplicates / overlaps</th><th>Overlap</th></tr></thead><tbody>");
+        foreach (var g in groups)
+            foreach (var m in g.Matches)
             {
-                var locs = string.Join("<br>", g.Occurrences
-                    .OrderBy(o => o.FeatureFile).ThenBy(o => o.LineNumber)
-                    .Select(o => $"{E(o.FeatureFile)}:{o.LineNumber}"
-                                 + (string.IsNullOrEmpty(o.Scenario) ? "" : $" <span class=\"dim\">— {E(o.Scenario)}</span>")));
                 sb.Append("<tr>");
-                sb.Append($"<td class=\"mono\">{E(g.StepPattern)}</td>");
-                sb.Append($"<td class=\"strong\">{g.Occurrences.Count}</td>");
-                sb.Append($"<td class=\"mono sm\">{locs}</td>");
+                sb.Append($"<td>{Tag(g.DuplicateType.ToString())}</td>");
+                sb.Append($"<td class=\"strong\">{E(g.BaseScenario.ScenarioName)}<br><span class=\"dim mono sm\">{E(g.BaseScenario.FeatureFile)}:{g.BaseScenario.ScenarioLineNumber}</span></td>");
+                sb.Append($"<td class=\"strong\">{E(m.Scenario.ScenarioName)}<br><span class=\"dim mono sm\">{E(m.Scenario.FeatureFile)}:{m.Scenario.ScenarioLineNumber}</span></td>");
+                sb.Append($"<td class=\"strong\">{m.OverlapPercentage:F0}%</td>");
                 sb.Append("</tr>");
             }
-            sb.Append("</tbody></table>");
-        }
+        sb.Append("</tbody></table>");
         Close(sb);
     }
 

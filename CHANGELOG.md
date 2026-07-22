@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] — 2026-07-22
+
+### Changed
+- **Duplicate detection now defaults to whole-scenario comparison.** The previous default counted how often each *step* was reused across scenarios — but step reuse is normal, intended BDD, not a duplicate. The check now finds duplicate / near-duplicate **scenarios** (exact, containment, high-overlap), which is the actionable signal, and reports each match's type, overlap %, and `file:line`. The misleading step-reuse table has been removed from the report.
+
 ## [1.0.2] — 2026-07-22
 
 ### Fixed
@@ -31,6 +36,7 @@ First release.
 - Cross-platform .NET 8 CLI, also distributed as a `dotnet tool` (`dotnet tool install -g SpecHygiene`).
 - 217 tests, including a matcher eval corpus whose expected results are pinned to real Reqnroll runtime behaviour.
 
+[1.0.3]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.3
 [1.0.2]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Karzone/SpecHygiene/releases/tag/v1.0.0

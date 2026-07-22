@@ -30,8 +30,10 @@ public class AnalysisSettings
     /// </summary>
     public bool ShowDataErrors { get; set; } = true;
 
-    // Duplicate mode
-    public DuplicateMode DuplicateMode { get; set; } = DuplicateMode.Step;
+    // Duplicate mode. Scenario is the meaningful hygiene signal — two whole scenarios that are
+    // identical / near-identical (a copy-pasted test). Step mode only counts how often a step is
+    // reused, which in BDD is normal and intended, not a problem — so it is not the default.
+    public DuplicateMode DuplicateMode { get; set; } = DuplicateMode.Scenario;
     public int ScenarioOverlapThreshold { get; set; } = 80;
     public int MinStepsForScenarioComparison { get; set; } = 3;
     public int MaxUniqueStepsForDuplicate { get; set; } = 5;
