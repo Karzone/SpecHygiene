@@ -16,6 +16,7 @@
 // error.", continuing line 3). Both were wrongly parsed as real Given step lines and reported
 // as "undefined step" - pure narrative text that Reqnroll never evaluates as a step at all.
 using System.Text.RegularExpressions;
+using SpecHygiene.Models;
 
 namespace SpecHygiene.Analysis.Reqnroll
 {
@@ -49,6 +50,32 @@ namespace SpecHygiene.Analysis.Reqnroll
         }
 
         /// <summary>
+        /// Dialect-aware step-line match. Faithful to the real parser, keywords are matched
+        /// CASE-SENSITIVELY (a lowercase keyword is narrative, not a step), same as the English
+        /// <see cref="StepLineRegex"/>. <paramref name="stepKeywords"/> are the dialect's step
+        /// keywords, trimmed of any trailing space (e.g. "Angenommen", "Wenn", "*").
+        /// </summary>
+        public static bool TryMatchStepLine(string line, IReadOnlyList<string> stepKeywords, out string rawKeyword, out string text)
+        {
+            var trimmed = line.TrimStart();
+            foreach (var kw in stepKeywords)
+            {
+                // keyword, then at least one whitespace, then the step text
+                if (trimmed.Length > kw.Length &&
+                    char.IsWhiteSpace(trimmed[kw.Length]) &&
+                    trimmed.StartsWith(kw, StringComparison.Ordinal))
+                {
+                    rawKeyword = kw;
+                    text = trimmed.Substring(kw.Length).Trim();
+                    return text.Length > 0;
+                }
+            }
+            rawKeyword = "";
+            text = "";
+            return false;
+        }
+
+        /// <summary>
         /// For each line index, returns whether that line occurs at or after the first
         /// Background:/Scenario:/Scenario Outline:/Examples: header in the file. Lines before
         /// the first such header - i.e. the Feature's free-text narrative preamble - are never
@@ -62,6 +89,29 @@ namespace SpecHygiene.Analysis.Reqnroll
             {
                 var trimmed = lines[i].TrimStart();
                 if (trimmed.Length > 0 && BlockBoundaryRegex.IsMatch(trimmed))
+                {
+                    insideBlock = true;
+                }
+                flags[i] = insideBlock;
+            }
+            return flags;
+        }
+
+        /// <summary>
+        /// Dialect-aware overload of <see cref="ComputeInsideBlockFlags(string[])"/>: a block
+        /// boundary is any Background/Scenario/Scenario Outline/Examples header in the file's
+        /// dialect. Without this, a localized file's narrative preamble is never left, so its
+        /// steps are never parsed.
+        /// </summary>
+        public static bool[] ComputeInsideBlockFlags(string[] lines, GherkinDialect dialect)
+        {
+            var flags = new bool[lines.Length];
+            bool insideBlock = false;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var trimmed = lines[i].TrimStart();
+                if (trimmed.Length > 0 &&
+                    (dialect.IsBackground(trimmed) || dialect.IsScenarioStart(trimmed) || dialect.IsExamples(trimmed)))
                 {
                     insideBlock = true;
                 }
