@@ -38,11 +38,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Canonical Gherkin dialect keywords (localized feature-file support) -->
+    <EmbeddedResource Include="Analysis\Gherkin\gherkin-languages.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <!-- Ship the README inside the NuGet package so it renders on nuget.org -->
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <!-- Ship third-party attribution (MIT notice for vendored gherkin-languages.json) -->
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

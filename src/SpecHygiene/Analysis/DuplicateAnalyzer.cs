@@ -14,6 +14,7 @@ public class DuplicateAnalyzer
     private readonly HashSet<string> _reviewedFingerprints;
     private readonly StepNormalizer _normalizer;
     private readonly DataSourceResolver _dataSourceResolver;
+    private readonly GherkinDialectProvider _dialectProvider;
 
     private static readonly Regex PlaceholderRegex = new(@"<([^>]+)>", RegexOptions.Compiled);
     private static readonly Regex ValidPlaceholderNameRegex = new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
@@ -21,12 +22,14 @@ public class DuplicateAnalyzer
     public DuplicateAnalyzer(
         AnalyzerSettings settings,
         HashSet<string>? reviewedFingerprints = null,
-        DataSourceResolver? dataSourceResolver = null)
+        DataSourceResolver? dataSourceResolver = null,
+        GherkinDialectProvider? dialectProvider = null)
     {
         _settings = settings;
         _reviewedFingerprints = reviewedFingerprints ?? new HashSet<string>();
         _normalizer = new StepNormalizer();
         _dataSourceResolver = dataSourceResolver ?? new DataSourceResolver(settings.Analysis.DataSource);
+        _dialectProvider = dialectProvider ?? GherkinDialectProvider.Default;
     }
 
     /// <summary>
@@ -145,6 +148,15 @@ public class DuplicateAnalyzer
         try
         {
             var lines = await File.ReadAllLinesAsync(filePath);
+
+            // Resolve the file's Gherkin dialect from its "# language:" header (English if absent).
+            // For English we keep honoring the user-configured StepKeywords (unchanged behavior);
+            // for a localized file we use that dialect's own step keywords.
+            var dialect = _dialectProvider.Detect(lines);
+            var stepKeywords = dialect.Language.Equals(GherkinDialectProvider.DefaultLanguage, StringComparison.OrdinalIgnoreCase)
+                ? _settings.Analysis.StepKeywords
+                : dialect.StepKeywords;
+
             var currentScenario = "";
             var currentScenarioLine = 0;
             var isScenarioOutline = false;
@@ -184,7 +196,7 @@ public class DuplicateAnalyzer
                 }
 
                 // Track Background
-                if (line.StartsWith("Background:", StringComparison.OrdinalIgnoreCase))
+                if (dialect.IsBackground(line))
                 {
                     inBackground = true;
                     backgroundSteps.Clear();
@@ -196,9 +208,7 @@ public class DuplicateAnalyzer
                 }
 
                 // Track Scenario or Scenario Outline
-                if (line.StartsWith("Scenario Outline:", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("Scenario Template:", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("Scenario:", StringComparison.OrdinalIgnoreCase))
+                if (dialect.IsScenarioStart(line))
                 {
                     inBackground = false;
 
@@ -221,8 +231,7 @@ public class DuplicateAnalyzer
                         continue;
                     }
 
-                    isScenarioOutline = line.StartsWith("Scenario Outline:", StringComparison.OrdinalIgnoreCase) ||
-                                       line.StartsWith("Scenario Template:", StringComparison.OrdinalIgnoreCase);
+                    isScenarioOutline = dialect.IsScenarioOutline(line);
 
                     currentScenario = line.Split(':', 2).LastOrDefault()?.Trim() ?? "";
                     currentScenarioLine = i + 1;
@@ -247,7 +256,7 @@ public class DuplicateAnalyzer
                     }
 
                     // Get Examples info - use tuple deconstruction
-                    var (placeholders, hasExamples) = FindExamplesInfo(lines, i);
+                    var (placeholders, hasExamples) = FindExamplesInfo(lines, i, dialect);
                     examplesPlaceholders = placeholders;
                     hasExamplesSection = hasExamples;
 
@@ -311,8 +320,8 @@ public class DuplicateAnalyzer
                 }
 
                 // Skip Examples, Feature lines etc.
-                if (line.StartsWith("Examples:", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("Feature:", StringComparison.OrdinalIgnoreCase) ||
+                if (dialect.IsExamples(line) ||
+                    dialect.IsFeature(line) ||
                     line.StartsWith("|") ||
                     string.IsNullOrWhiteSpace(line) ||
                     line.StartsWith("#"))
@@ -321,7 +330,7 @@ public class DuplicateAnalyzer
                 }
 
                 // Check if this is a step line
-                if (IsStepLine(line))
+                if (IsStepLine(line, stepKeywords))
                 {
                     var stepText = line;
                     var dataTable = new List<Dictionary<string, string>>();
@@ -1179,16 +1188,16 @@ public class DuplicateAnalyzer
         return Directory.GetDirectories(root).ToList();
     }
 
-    private (HashSet<string> Placeholders, bool HasExamples) FindExamplesInfo(string[] lines, int startIndex)
+    private (HashSet<string> Placeholders, bool HasExamples) FindExamplesInfo(string[] lines, int startIndex, GherkinDialect dialect)
     {
         var placeholders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var hasExamples = false;
-        
+
         for (int i = startIndex + 1; i < lines.Length; i++)
         {
             var line = lines[i].Trim();
-            
-            if (line.StartsWith("Examples:", StringComparison.OrdinalIgnoreCase))
+
+            if (dialect.IsExamples(line))
             {
                 hasExamples = true;
                 
@@ -1215,9 +1224,7 @@ public class DuplicateAnalyzer
             }
             
             // Stop at next scenario
-            if (line.StartsWith("Scenario:", StringComparison.OrdinalIgnoreCase) ||
-                line.StartsWith("Scenario Outline:", StringComparison.OrdinalIgnoreCase) ||
-                line.StartsWith("Scenario Template:", StringComparison.OrdinalIgnoreCase))
+            if (dialect.IsScenarioStart(line))
             {
                 break;
             }
@@ -1226,9 +1233,9 @@ public class DuplicateAnalyzer
         return (placeholders, hasExamples);
     }
 
-    private bool IsStepLine(string line)
+    private bool IsStepLine(string line, IReadOnlyList<string> stepKeywords)
     {
-        return _settings.Analysis.StepKeywords.Any(k => 
+        return stepKeywords.Any(k =>
             line.StartsWith(k + " ", StringComparison.OrdinalIgnoreCase));
     }
 

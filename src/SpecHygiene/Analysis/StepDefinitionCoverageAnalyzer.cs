@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using SpecHygiene.Analysis.Reqnroll;
 using SpecHygiene.Models;
+using SpecHygiene.Services;
 
 namespace SpecHygiene.Analysis;
 
@@ -30,14 +31,13 @@ public class StepDefinitionCoverageAnalyzer
     /// </summary>
     private List<CompiledBinding> _indeterminate = new();
     
-    private static readonly Regex ScenarioRegex = new(
-        @"^\s*(Scenario|Scenario Outline):\s*(.+)$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    
     private static readonly Regex TagRegex = new(
         @"@[\w-]+",
         RegexOptions.Compiled);
-    
+
+    // English keyword prefixes stripped by NormalizeForMatching. This runs on step text that is
+    // ALREADY keyword-stripped (TryMatchStepLine removed it) and on binding patterns (English-authored
+    // regex), so localized keywords never reach here — dialect handling is not needed at this site.
     private static readonly string[] StepKeywords = { "Given ", "When ", "Then ", "And ", "But ", "* " };
 
     /// <summary>
@@ -567,9 +567,13 @@ public class StepDefinitionCoverageAnalyzer
         var projectName = ExtractProjectName(filePath);
         var featureFileName = Path.GetFileName(filePath);
 
+        // Resolve the file's Gherkin dialect from its "# language:" header (English if absent) so
+        // localized keywords (Szenario:, Beispiele:, Angenommen …) are recognized.
+        var dialect = GherkinDialectProvider.Default.Detect(lines);
+
         // Lines before the first Background:/Scenario:/Examples: header are the Feature's free-text
         // narrative and are never steps, however they start.
-        var insideBlock = GherkinNarrativeGuard.ComputeInsideBlockFlags(lines);
+        var insideBlock = GherkinNarrativeGuard.ComputeInsideBlockFlags(lines, dialect);
 
         var featureTags = new List<string>();
         var currentTags = new List<string>();
@@ -625,22 +629,21 @@ public class StepDefinitionCoverageAnalyzer
                 continue;
             }
 
-            if (line.StartsWith("Feature:", StringComparison.OrdinalIgnoreCase))
+            if (dialect.IsFeature(line))
                 continue;
 
-            if (line.StartsWith("Background:", StringComparison.OrdinalIgnoreCase))
+            if (dialect.IsBackground(line))
             {
                 inBackground = true; inExamples = false; outlineSteps.Clear(); lastConcreteKeyword = null;
                 currentScenario = "Background"; currentTags.Clear();
                 continue;
             }
 
-            var scenarioMatch = ScenarioRegex.Match(line);
-            if (scenarioMatch.Success)
+            if (dialect.IsScenarioStart(line))
             {
                 inBackground = false;
                 inExamples = false; exampleHeaders = null; outlineSteps.Clear(); lastConcreteKeyword = null;
-                currentScenario = scenarioMatch.Groups[2].Value.Trim();
+                currentScenario = line.Split(':', 2).LastOrDefault()?.Trim() ?? string.Empty;
 
                 var allTags = featureTags.Concat(currentTags).ToList();
                 var ignoreTag = allTags.FirstOrDefault(t => _ignoreTags.Any(it => t.Equals(it, StringComparison.OrdinalIgnoreCase)));
@@ -655,7 +658,7 @@ public class StepDefinitionCoverageAnalyzer
                 continue;
             }
 
-            if (line.StartsWith("Examples:", StringComparison.OrdinalIgnoreCase))
+            if (dialect.IsExamples(line))
             {
                 inExamples = true; exampleHeaders = null;
                 continue;
@@ -683,7 +686,7 @@ public class StepDefinitionCoverageAnalyzer
             // Gherkin and which our parser has always accepted. Keep it: dropping those lines would shrink
             // the corpus and turn live bindings dead — the one direction this change must never move.
             if (insideBlock[i] && !string.IsNullOrEmpty(currentScenario)
-                && TryMatchStepLine(line, out var stepText, out var rawKeyword))
+                && TryMatchStepLine(line, dialect, out var stepText, out var rawKeyword))
             {
                 // Buffer every block's steps: an Examples: table may follow under either keyword.
                 var resolved = ResolveKeyword(rawKeyword, ref lastConcreteKeyword);
@@ -712,24 +715,12 @@ public class StepDefinitionCoverageAnalyzer
     }
 
     /// <summary>
-    /// Real Gherkin step-line grammar (case-sensitive, per <see cref="GherkinNarrativeGuard"/>), plus the
-    /// "* " asterisk step the guard doesn't model. Returns the step text without its keyword.
+    /// Real Gherkin step-line grammar (case-sensitive, per <see cref="GherkinNarrativeGuard"/>) for the
+    /// file's dialect. The dialect's step keywords already include the "* " asterisk step, so it is
+    /// matched here too. Returns the step text without its keyword.
     /// </summary>
-    private static bool TryMatchStepLine(string line, out string stepText, out string rawKeyword)
-    {
-        if (GherkinNarrativeGuard.TryMatchStepLine(line, out rawKeyword, out stepText)) return true;
-
-        if (line.StartsWith("* ", StringComparison.Ordinal))
-        {
-            stepText = line.Substring(2).Trim();
-            rawKeyword = "*";
-            return stepText.Length > 0;
-        }
-
-        stepText = "";
-        rawKeyword = "";
-        return false;
-    }
+    private static bool TryMatchStepLine(string line, GherkinDialect dialect, out string stepText, out string rawKeyword) =>
+        GherkinNarrativeGuard.TryMatchStepLine(line, dialect.StepKeywords, out rawKeyword, out stepText);
 
     /// <summary>
     /// Resolve a written keyword to the concrete one Reqnroll binds on. Given/When/Then are concrete
